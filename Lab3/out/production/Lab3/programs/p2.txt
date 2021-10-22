@@ -1,0 +1,17 @@
+PROGRAM
+	MAIN -> {
+		DECLARATIONS
+			INTEGER: input_number, i;
+			BOOLEAN: prime <- true;
+		STATEMENTS
+		{
+			in("Give a number: ")>>input_number;
+			for(i <- 2; i <= input_number / 2; i <- i+1)
+				if (input_number % i == 0)
+					prime <- false;
+			if (prime == true)
+				out<<"The number ", input_number, " is prime";
+			else
+				out<<"The number ", input_number, " is not prime";
+		}
+	}

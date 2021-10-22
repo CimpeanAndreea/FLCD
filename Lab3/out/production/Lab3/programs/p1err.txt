@@ -1,0 +1,17 @@
+PROGRAM
+	MAIN -> {
+		DECLARATIONS
+			INTEGER: 1_nr, nr_2, nr_3, min;
+			STRING: output_message <- "The minimum of the 3 numbers is: ;
+		STATEMENTS
+		{
+			in>>nr_1, nr_2, nr_3;
+			if (nr_1 < nr_2)
+				min <- nr_1;
+			else
+				min <- nr_2;
+			if (nr_3 < min)
+				min <- nr_3;
+			out<<output_message, min;
+		}
+	}
