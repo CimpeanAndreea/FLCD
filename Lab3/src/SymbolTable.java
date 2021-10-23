@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class SymbolTable {
@@ -80,6 +82,22 @@ public class SymbolTable {
                 return true;
             }
         }
+    }
+
+    public List<Pair<String, Pair<Integer, Integer>>> getAllSymbols() {
+        List<Pair<String, Pair<Integer, Integer>>> symbols = new ArrayList<>();
+        for(int i = 0; i < this.capacity; i++) {
+            if(this.hashTable[i] != null) {
+                Node currentNode = this.hashTable[i];
+                int secondIndex = 0;
+                while(currentNode != null) {
+                    symbols.add(new Pair<>(currentNode.getValue(), new Pair<>(i, secondIndex)));
+                    currentNode = currentNode.getNext();
+                    secondIndex++;
+                }
+            }
+        }
+        return symbols;
     }
 
     @Override

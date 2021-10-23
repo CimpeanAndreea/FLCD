@@ -1,72 +1,38 @@
-import org.w3c.dom.css.CSSValue;
-
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Scanner {
-    public final String IDENTIFIER_PATTERN = "(^[a-zA-Z]([a-zA-Z0-9]){0,255}$)|(^[a-zA-Z]([a-zA-Z0-9_]){0,254}[a-zA-Z0-9]$)";
-    public final String CONST_IDENTIFIER_PATTERN = "(^[A-Z]{1,256}$)|(^[A-Z][A-Z_]{0,254}[A-Z]$)";
-    public final String INTEGER_CONSTANT_PATTERN = "^[+-]?([1-9][0-9]*)|0$";
-    public final String CHARACTER_CONSTANT_PATTERN = "^'[a-zA-Z0-9]'$";
-    public final String STRING_CONSTANT_PATTERN = "^\"[a-zA-Z0-9 :!?.]*\"$";
-    public final String BOOLEAN_CONSTANT_PATTERN = "^true|false$";
-
-    private String programFileName;
+    private final String programFileName;
 
     private SymbolTable symbolTable = new SymbolTable(30);
     private ProgramInternalForm PIF = new ProgramInternalForm();
 
     private List<String> programLines = new ArrayList<>();
-    private List<String> tokens = new ArrayList<>();
-
-    private String beginningOfOperator = "+-*/%<>=!";
-
-    private List<Character> simpleOperators = new ArrayList<>(
-            Arrays.asList('+','-','*','/','%','<','>'));
-    private List<String> compoundOperators = new ArrayList<>(
-            Arrays.asList(">>","<<","<-","->","<=",">=","==","!="));
-    private List<String> operators = new ArrayList<>(
-            Arrays.asList(">>","<<","<-","->","<=",">=","==","!=","+","-","*","/","%","<",">"));
-
-    public final String separators = ";:,{}()[]";
-    public final List<String> reservedWords = new ArrayList<>(
-            Arrays.asList("program", "main", "const", "declarations", "statements", "integer", "character",
-                    "boolean", "string", "array", "in", "out", "while", "for", "if", "else", "and", "or"));
 
     public Scanner(String programFileName)
     {
         this.programFileName = programFileName;
-        this.readTokens();
+        this.readProgram(this.programFileName);
     }
 
     public void scan() throws LexicalError
     {
-        this.readProgram(programFileName);
         for(int i = 0; i < programLines.size(); i++)
         {
             String line = this.programLines.get(i);
             List<String> lineTokens = getTokensFromLine(line.strip(), i + 1);
-            //System.out.println("line " + (i+1) + ":" + line) ;
-            //System.out.println(lineTokens);
             for(String token : lineTokens) {
-                if(isReservedWord(token) || isSeparator(token) || isOperator(token)) {
+                if(Tokens.isReservedWord(token) || Tokens.isSeparator(token) || Tokens.isOperator(token)) {
                     this.PIF.add(token, new Pair<>(-1, -1));
                 }
+                else if(Tokens.isConstant(token) || Tokens.isIdentifier(token)) {
+                    this.symbolTable.insertSymbol(token);
+                    this.PIF.add(token, this.symbolTable.getSymbolPosition(token));
+                }
                 else {
-                    //System.out.println(token);
-                    if(isStringConstant(token) || isCharacterConstant(token) || isBooleanConstant(token) || isIntegerConstant(token)) {
-                        this.symbolTable.insertSymbol(token);
-                        this.PIF.add(token, this.symbolTable.getSymbolPosition(token));
-                    }
-                    else if(isIdentifier(token)) {
-                        this.symbolTable.insertSymbol(token);
-                        this.PIF.add(token, this.symbolTable.getSymbolPosition(token));
-                    }
-                    else {
-                        throw new LexicalError(token, i + 1, "Unidentified token");
-                    }
+                    throw new LexicalError(token, i + 1, "Unidentified token");
                 }
             }
         }
@@ -77,7 +43,7 @@ public class Scanner {
         int lineLength = line.length();
         int index = 0;
 
-        StringBuilder currentToken = new StringBuilder();
+        StringBuilder currentToken = new StringBuilder(); //construct a token
 
         while(index < lineLength) {
             char currentCharacter = line.charAt(index);
@@ -92,7 +58,7 @@ public class Scanner {
                 currentCharacter = line.charAt(index);
             }
 
-            if(isBeginningOfOperator(currentCharacter)) {
+            if(Tokens.isBeginningOfOperator(currentCharacter)) {
                 if(!currentToken.isEmpty()) {
                     lineTokens.add(currentToken.toString());
                     currentToken.setLength(0);
@@ -101,9 +67,13 @@ public class Scanner {
                 String operator = String.valueOf(currentCharacter);
                 if(index < lineLength - 1) {
                     String compoundOperator = operator + line.charAt(index + 1);
-                    if(compoundOperators.contains(compoundOperator)) {
+                    if(Tokens.compoundOperators.contains(compoundOperator)) {
                         lineTokens.add(compoundOperator);
                         index += 2;
+                    }
+                    else if (Character.isDigit(line.charAt(index + 1)) && !Tokens.isIdentifier(lineTokens.get(lineTokens.size() - 1)) && !Tokens.isIntegerConstant(lineTokens.get(lineTokens.size() - 1))) {
+                        currentToken.append(operator);
+                        index+=1;
                     }
                     else {
                         lineTokens.add(operator);
@@ -116,7 +86,7 @@ public class Scanner {
                 }
             }
 
-            else if(isSeparator(String.valueOf(currentCharacter))) {
+            else if(Tokens.isSeparator(String.valueOf(currentCharacter))) {
                 if(!currentToken.isEmpty()) {
                     lineTokens.add(currentToken.toString());
                     currentToken.setLength(0);
@@ -182,27 +152,6 @@ public class Scanner {
         return lineTokens;
     }
 
-    public boolean isBeginningOfOperator(Character character) {
-        return beginningOfOperator.indexOf(character) != -1;
-    }
-
-    public boolean isSeparator(String token) {
-        return separators.contains(token);
-    }
-
-
-    public void readTokens() {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader("src/token.in"));
-            this.tokens = reader.lines()
-                                .map(String::trim)
-                                .collect(Collectors.toList());
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void readProgram(String fileName) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -213,38 +162,6 @@ public class Scanner {
         }
     }
 
-    public boolean isIdentifier(String token) {
-        return token.matches(IDENTIFIER_PATTERN);
-    }
-
-    public boolean isConstantIdentifier(String token) {
-        return token.matches(CONST_IDENTIFIER_PATTERN);
-    }
-
-    public boolean isIntegerConstant(String token) {
-        return token.matches(INTEGER_CONSTANT_PATTERN);
-    }
-
-    public boolean isCharacterConstant(String token) {
-        return token.matches(CHARACTER_CONSTANT_PATTERN);
-    }
-
-    public boolean isStringConstant(String token) {
-        return token.matches(STRING_CONSTANT_PATTERN);
-    }
-
-    public boolean isBooleanConstant(String token) {
-        return token.matches(BOOLEAN_CONSTANT_PATTERN);
-    }
-
-    public boolean isReservedWord(String token) {
-        return reservedWords.contains(token.toLowerCase());
-    }
-
-    public boolean isOperator(String token) {
-        return operators.contains(token);
-    }
-
     public ProgramInternalForm getPIF() {
         return this.PIF;
     }
@@ -252,35 +169,30 @@ public class Scanner {
     public void writePIF(String fileName) {
         List<PIFEntry> pifEntries = this.PIF.getEntries();
         try {
-
-            PrintWriter writer = new PrintWriter(fileName);
-
+            PrintWriter writer = new PrintWriter(new FileWriter(fileName));
+            writer.println("Token,Position in ST");
             for(PIFEntry entry: pifEntries) {
                 String[] data = {entry.getToken(), entry.getPositionInSymbolTable().toString()};
                 writer.println(this.convertToCSV(data));
             }
-        }
-        catch (IOException e) {
+            writer.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void writeTxtPIF(String fileName) {
-        List<PIFEntry> pifEntries = this.PIF.getEntries();
+    public void writeST(String fileName) {
         try {
-            PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName)));
-            for(PIFEntry entry: pifEntries) {
-                System.out.println(entry);
-                writer.println(entry);
+            PrintWriter writer = new PrintWriter(new FileWriter(fileName));
+            writer.println("Token,Position");
+            for(Pair<String, Pair<Integer, Integer>> symbol : this.symbolTable.getAllSymbols()) {
+                String[] data = {symbol.getFirst(), symbol.getSecond().toString()};
+                writer.println(this.convertToCSV(data));
             }
-        }
-        catch (IOException e) {
+            writer.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void writeTxtST(String fileName) {
-        System.out.println(this.symbolTable);
     }
 
     public String convertToCSV(String[] data) {

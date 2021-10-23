@@ -1,10 +1,16 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner("src/programs/p3.txt");
+        String program = "p2";
+        String programFile = "src/programs/" + program + "/" + program + ".txt";
+
+        Scanner scanner = new Scanner(programFile);
         scanner.scan();
-        //System.out.println(scanner.getPIF());
-        //scanner.writePIF("src/pif.csv");
-        scanner.writeTxtPIF("src/pif.txt");
-        scanner.writeTxtST("src/st.txt");
+        scanner.writePIF("src/programs/" + program + "/" + "pif.csv");
+        scanner.writeST("src/programs/" + program + "/" + "st.csv");
+
     }
 }

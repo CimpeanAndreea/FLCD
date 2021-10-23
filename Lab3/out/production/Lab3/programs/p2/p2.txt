@@ -6,7 +6,7 @@ PROGRAM
 		STATEMENTS
 		{
 			in("Give a number: ")>>input_number;
-			for(i <- 2; i <= input_number / 2; i <- i+1)
+			for(i <- +2; i <= input_number / 2; i <- i+1)
 				if (input_number % i == 0)
 					prime <- false;
 			if (prime == true)
