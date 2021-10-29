@@ -42,6 +42,7 @@ public class Scanner {
                 }
             }
         }
+        System.out.println("Lexically correct");
     }
 
     /**

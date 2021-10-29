@@ -8,7 +8,7 @@ PROGRAM
 
 			in>>nr_1, nr_2, nr_3;
 			if (nr_1 < nr_2)
-				min <- nr_1;
+				min<-nr_1;
 			else
 				min <- nr_2;
 			if (nr_3 < min)
