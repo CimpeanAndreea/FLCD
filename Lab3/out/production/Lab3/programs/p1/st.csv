@@ -1,7 +1,9 @@
 Token,Position
++3,"(4,0)"
 nr_1,"(8,0)"
 nr_2,"(9,0)"
 nr_3,"(10,0)"
-"""The minimum of the 3 numbers is- ""","(19,0)"
+"""The minimum of the 3 numbers is-""","(17,0)"
+4,"(22,0)"
 min,"(24,0)"
 output_message,"(25,0)"

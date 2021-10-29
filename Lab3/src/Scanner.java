@@ -33,9 +33,13 @@ public class Scanner {
                 if(Tokens.isReservedWord(token) || Tokens.isSeparator(token) || Tokens.isOperator(token)) {
                     this.PIF.add(token, new Pair<>(-1, -1));
                 }
-                else if(Tokens.isConstant(token) || Tokens.isIdentifier(token)) {
+                else if(Tokens.isConstant(token)) {
                     this.symbolTable.insertSymbol(token);
-                    this.PIF.add(token, this.symbolTable.getSymbolPosition(token));
+                    this.PIF.add("constant", this.symbolTable.getSymbolPosition(token));
+                }
+                else if(Tokens.isIdentifier(token)) {
+                    this.symbolTable.insertSymbol(token);
+                    this.PIF.add("identifier", this.symbolTable.getSymbolPosition(token));
                 }
                 else {
                     throw new LexicalError(token, i + 1, "Unidentified token");
