@@ -19,7 +19,7 @@ public class Scanner {
 
     /**
      * Classify each token from each line
-     *
+     * Add each token in PIF (and ST if the case)
      *
      * @throws LexicalError if token can not be identified
      */

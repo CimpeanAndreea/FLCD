@@ -19,7 +19,7 @@ public class Tokens {
     public static final String IDENTIFIER_PATTERN = "(^[a-zA-Z]([a-zA-Z0-9]){0,255}$)|(^[a-zA-Z]([a-zA-Z0-9_]){0,254}[a-zA-Z0-9]$)";
     public static final String INTEGER_CONSTANT_PATTERN = "^[+-]?([1-9][0-9]*)|0$";
     public static final String CHARACTER_CONSTANT_PATTERN = "^'[a-zA-Z0-9]'$";
-    public static final String STRING_CONSTANT_PATTERN = "^\"[a-zA-Z0-9 :!?.]*\"$";
+    public static final String STRING_CONSTANT_PATTERN = "^\"[a-zA-Z0-9 :;!?.+/%*&#<>=^-]*\"$";
     public static final String BOOLEAN_CONSTANT_PATTERN = "^true|false$";
 
     public static boolean isIdentifier(String token) {

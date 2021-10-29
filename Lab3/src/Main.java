@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
-        String program = "p1err";
+        String program = "p1";
         String programFile = "src/programs/" + program + "/" + program + ".txt";
 
         Scanner scanner = new Scanner(programFile);

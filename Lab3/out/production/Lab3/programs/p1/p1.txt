@@ -2,7 +2,7 @@ PROGRAM
 	MAIN -> {
 		DECLARATIONS
 			INTEGER: nr_1, nr_2, nr_3, min;
-			STRING: output_message <- "The minimum of the 3 numbers is: ";
+			STRING: output_message <- "The minimum of the 3 numbers is- ";
 		STATEMENTS
 		{
 
