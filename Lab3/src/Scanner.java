@@ -17,6 +17,12 @@ public class Scanner {
         this.readProgram(this.programFileName);
     }
 
+    /**
+     * Classify each token from each line
+     *
+     *
+     * @throws LexicalError if token can not be identified
+     */
     public void scan() throws LexicalError
     {
         for(int i = 0; i < programLines.size(); i++)
@@ -38,6 +44,13 @@ public class Scanner {
         }
     }
 
+    /**
+     * Take one line of the program character by character and construct tokens
+     *
+     * @param line - a line of the input program
+     * @param indexLine - the number of the line in the program
+     * @return - a list of tokens as strings
+     */
     public List<String> getTokensFromLine(String line, int indexLine) {
         List<String> lineTokens = new ArrayList<>();
         int lineLength = line.length();
@@ -152,6 +165,11 @@ public class Scanner {
         return lineTokens;
     }
 
+    /**
+     * Read input program and split it in lines
+     *
+     * @param fileName - the file containing the program
+     */
     public void readProgram(String fileName) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -166,6 +184,11 @@ public class Scanner {
         return this.PIF;
     }
 
+    /**
+     * Write PIF in a csv file
+     *
+     * @param fileName - the output file for PIF
+     */
     public void writePIF(String fileName) {
         List<PIFEntry> pifEntries = this.PIF.getEntries();
         try {
@@ -181,6 +204,11 @@ public class Scanner {
         }
     }
 
+    /**
+     * Write the Symbol Table in a file
+     *
+     * @param fileName - the output file for ST
+     */
     public void writeST(String fileName) {
         try {
             PrintWriter writer = new PrintWriter(new FileWriter(fileName));
@@ -195,12 +223,21 @@ public class Scanner {
         }
     }
 
+    /**
+     * Convert a list of strings in desired format for writing in a csv file
+     *
+     * @param data - list of strings
+     * @return - data in a format to write in csv
+     */
     public String convertToCSV(String[] data) {
         return Stream.of(data)
                 .map(this::escapeSpecialCharacters)
                 .collect(Collectors.joining(","));
     }
 
+    /**
+     * Helper function for converting data in a csv format
+     */
     public String escapeSpecialCharacters(String data) {
         String escapedData = data;
         if (data.contains(",") || data.contains("\"") || data.contains("'")) {
