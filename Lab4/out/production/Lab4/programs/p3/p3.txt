@@ -1,0 +1,29 @@
+PROGRAM
+	MAIN -> {
+		DECLARATIONS
+			INTEGER: n, i, nr, sum <- 0, positive_integers <- 0;
+			INTEGER CONST: MAX_ARRAY_SIZE <- 100;
+			ARRAY[INTEGER]: a[MAX_ARRAY_SIZE];
+		STATEMENTS
+		{
+			in("Give the size of the array:")>>n;
+			for (i <- 0; i < n; i <- i+1)
+			{
+				in>>nr;
+				a[i] <- nr;
+			}
+			for (i <- 0; i < n; i <- i+1)
+			{
+				if(a[i] > 0)
+				{
+					sum <- sum + a[i];
+					positive_integers <- positive_integers + 1;
+				}
+			}
+
+			if (positive_integers == 0)
+				out<<"There is no positive integer in the array";
+			else
+				out<<"The average of the positive integers is: ", sum/positive_integers;
+		}
+	}
