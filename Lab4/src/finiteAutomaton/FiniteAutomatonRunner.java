@@ -12,7 +12,6 @@ public class FiniteAutomatonRunner {
 
     public FiniteAutomatonRunner(String fileName) {
         this.fileName = fileName;
-        this.finiteAutomaton = new FiniteAutomaton(this.fileName);
     }
 
     public void printMenu() {
@@ -29,6 +28,13 @@ public class FiniteAutomatonRunner {
     }
 
     public void run() {
+        try {
+            this.finiteAutomaton = new FiniteAutomaton(this.fileName);
+        }
+        catch (RuntimeException exception) {
+            System.out.println(exception.getMessage());
+            return;
+        }
         Scanner consoleReader = new Scanner(System.in);
         while (true) {
             this.printMenu();

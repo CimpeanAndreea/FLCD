@@ -34,27 +34,33 @@ public class FiniteAutomaton {
         this.readFAFromFile();
     }
 
-    public void readFAFromFile() {
+    public void readFAFromFile() throws RuntimeException {
         try (BufferedReader reader = new BufferedReader(new FileReader(this.fileName))) {
             List<String> lines = reader.lines().collect(Collectors.toList());
             this.states = Arrays.stream(lines.get(0).split(","))
                                 .map(String::strip)
                                 .collect(Collectors.toList());
-            //System.out.println(Q);
 
             this.alphabet = Arrays.stream(lines.get(1).split(","))
                                 .map(String::strip)
                                 .collect(Collectors.toList());
-            //System.out.println(Sigma);
 
             this.initialState = lines.get(2).strip();
-            //System.out.println(q0);
+
+            if(!this.states.contains(this.initialState)) {
+                throw new RuntimeException("Initial state not in the set of states!");
+            }
 
             this.finalStates = Arrays.stream(lines.get(3).split(","))
                                 .map(String::strip)
                                 .collect(Collectors.toList());
 
-            //System.out.println(F);
+            for(String state : this.finalStates) {
+                if(!this.states.contains(state)) {
+                    throw new RuntimeException("Final state not in the set of states!");
+                }
+            }
+
 
             for(int i = 4; i < lines.size(); i++) {
                 String[] sides = lines.get(i).split("\\|-");
@@ -62,13 +68,29 @@ public class FiniteAutomaton {
                 String rightHandSide = sides[1].strip();
 
                 String startingState = leftHandSide[0].strip();
+                if(!this.states.contains(startingState)) {
+                    throw new RuntimeException("Starting state for transition is not in the set of states!");
+                }
+
                 List<String> alphabetLetters = Arrays.stream(leftHandSide[1].split(","))
                                                             .map(String::strip)
                                                             .collect(Collectors.toList());
+                for(String letter : alphabetLetters) {
+                    if(!this.alphabet.contains(letter)) {
+                        throw new RuntimeException("Letter for transition is not in the alphabet!");
+                    }
+                }
+
 
                 List<String> resultStates = Arrays.stream(rightHandSide.split(","))
                                                         .map(String::strip)
                                                         .collect(Collectors.toList());
+
+                for(String result : resultStates) {
+                    if(!this.states.contains(result)) {
+                        throw new RuntimeException("Result state for transition is not in the set of states!");
+                    }
+                }
 
                 for (String alphabetLetter : alphabetLetters) {
                     Pair<String, String> key = new Pair<>(startingState, alphabetLetter);
@@ -76,14 +98,19 @@ public class FiniteAutomaton {
                         List<String> result = new ArrayList<>();
                         result.addAll(this.transitions.get(key));
                         result.addAll(resultStates);
-                        this.transitions.put(key, result);
+
+                        List<String> resultWithoutDuplicates = new ArrayList<>(
+                                new HashSet<>(result));
+
+                        this.transitions.put(key, resultWithoutDuplicates);
                     }
                     else {
-                        this.transitions.put(new Pair<>(startingState, alphabetLetter), resultStates);
+                        List<String> resultWithoutDuplicates = new ArrayList<>(
+                                new HashSet<>(resultStates));
+                        this.transitions.put(new Pair<>(startingState, alphabetLetter), resultWithoutDuplicates);
                     }
                 }
             }
-            //System.out.println(this.delta);
 
         } catch (IOException e) {
             e.printStackTrace();
