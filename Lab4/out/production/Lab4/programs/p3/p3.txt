@@ -1,7 +1,7 @@
 PROGRAM
 	MAIN -> {
 		DECLARATIONS
-			INTEGER: n, i, nr, sum <- 0, positive_integers <- 0;
+			INTEGER: n, i, nr, sum <- 0, _positive_integers <- 0;
 			INTEGER CONST: MAX_ARRAY_SIZE <- 100;
 			ARRAY[INTEGER]: a[MAX_ARRAY_SIZE];
 		STATEMENTS
