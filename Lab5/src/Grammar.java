@@ -18,39 +18,45 @@ public class Grammar {
 
     public void readFromFile() {
         try (BufferedReader reader = new BufferedReader(new FileReader(this.fileName))) {
-           List<String> lines = reader.lines().collect(Collectors.toList());
-           this.NonTerminals = Arrays.stream(lines.get(0).split(" "))
+            List<String> lines = reader.lines().collect(Collectors.toList());
+            this.NonTerminals = Arrays.stream(lines.get(0).split(" "))
                                     .collect(Collectors.toSet());
 
-           this.Terminals = Arrays.stream(lines.get(1).split(" "))
+            //System.out.println(this.NonTerminals);
+
+            this.Terminals = Arrays.stream(lines.get(1).split(" "))
                                 .collect(Collectors.toSet());
 
-           this.StartingSymbol = lines.get(2).strip();
-           if(!this.NonTerminals.contains(this.StartingSymbol)) {
-               throw new RuntimeException("Starting Symbol not in the set of non terminals!");
-           }
+            //System.out.println(this.Terminals);
+
+            this.StartingSymbol = lines.get(2).strip();
+            if(!this.NonTerminals.contains(this.StartingSymbol)) {
+                throw new RuntimeException("Starting Symbol not in the set of non terminals!");
+            }
+
+            //System.out.println(this.StartingSymbol);
 
             for(int i = 3; i < lines.size(); i++) {
-                String[] sides = lines.get(i).split("::=");
-                String[] leftHandSide = sides[0].split(" ");
-                String[] rightHandSide = sides[1].split("|");
+                String[] sides = lines.get(i).strip().split("::=");
+                String[] leftHandSide = sides[0].strip().split(" ");
+                String[] rightHandSide = sides[1].strip().split("\\|");
 
                 List<String> lhs = new ArrayList<>();
                 for (String l : leftHandSide) {
-                    if (!this.NonTerminals.contains(l) && !this.Terminals.contains(l)) {
-                        throw new RuntimeException("Production lhs does not contain a valid element!");
+                    if (!this.NonTerminals.contains(l.strip()) && !this.Terminals.contains(l.strip())) {
+                        throw new RuntimeException("Production lhs does not contain a valid element: " + l + " !");
                     }
-                    lhs.add(l);
+                    lhs.add(l.strip());
                 }
                 if (!Productions.containsKey(lhs))
                     this.Productions.put(lhs, new HashSet<>());
 
                 for(String resultOfProduction : rightHandSide) {
                     List<String> rhs = new ArrayList<>();
-                    String[] result = resultOfProduction.split(" ");
+                    String[] result = resultOfProduction.strip().split(" ");
                     for(String r : result) {
                         if (!this.NonTerminals.contains(r) && !this.Terminals.contains(r) && !r.equals("epsilon")) {
-                            throw new RuntimeException("Production rhs does not contain a valid element!");
+                            throw new RuntimeException("Production rhs does not contain a valid element: " + r + " !");
                         }
                         rhs.add(r);
                     }
@@ -82,12 +88,28 @@ public class Grammar {
 
     public void printProductions() {
         System.out.println("\nPRODUCTIONS");
+        StringBuilder stringBuilder = new StringBuilder();
+        for(List<String> lhs : this.Productions.keySet()) {
+            String left = String.join("", lhs);
+            Set<List<String>> rhs = this.Productions.get(lhs);
+            stringBuilder.append(left).append("->");
+            for(List<String> oneProduction : rhs) {
+                for(String element : oneProduction) {
+                    stringBuilder.append(element);
+                }
+                stringBuilder.append("|");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.append("\n");
+        }
+        System.out.println(stringBuilder);
     }
 
     public void printProductionsForNonTerminal(String NonTerminal) {
+        System.out.println("\nPRODUCTIONS FOR NON TERMINAL");
         StringBuilder stringBuilder = new StringBuilder();
         for(List<String> lhs : this.Productions.keySet()) {
-            if(lhs.contains(NonTerminal)) {
+            if(lhs.contains(NonTerminal) && Objects.equals(lhs.get(0), NonTerminal)) {
                 Set<List<String>> rhs = this.Productions.get(lhs);
                 stringBuilder.append(NonTerminal).append("->");
                 for(List<String> oneProduction : rhs) {

@@ -1,0 +1,36 @@
+program declarations_list declaration statements_list simple_declaration array_declaration const_declaration simple_type list_identifiers initialized_identifier list_const_identifiers initialized_const list_array_identifiers array_identifier statement simple_statement compound_statement struct_statement assign_statement read_statement write_statement expression array_element term factor list_identifiers_print list_outputs output relation if_statement while_statement for_statement condition
++ - * / < > <= >= == != <- -> << >> % ! , ( ) [ ] { } : ; main declarations statements integer string boolean character array const and or in out if else then for while identifier constant do
+program
+program ::= main -> { declarations declarations_list ; statements statements_list }
+declarations_list ::= declaration | declaration ; declarations_list
+declaration ::= simple_declaration | array_declaration | const_declaration
+simple_declaration ::= simple_type : list_identifiers
+simple_type ::= character | integer | boolean | string
+list_identifiers ::= identifier | initialized_identifier | identifier , list_identifiers | initialized_identifier , list_identifiers
+initialized_identifier ::= identifier <- constant
+const_declaration ::= simple_type const : list_const_identifiers
+list_const_identifiers ::= initialized_const | initialized_const , list_const_identifiers
+initialized_const ::= identifier <- constant
+array_declaration ::= array [ simple_type ] : list_array_identifiers
+list_array_identifiers ::= array_identifier | array_identifier , list_array_identifiers
+array_identifier ::= identifier [ identifier ] | identifier [ constant ]
+statements_list ::= statement | compound_statement
+statement ::= simple_statement | struct_statement
+simple_statement ::= assign_statement | read_statement | write_statement
+assign_statement ::= identifier <- expression | array_element <- expression
+expression ::= expression + term | expression - term | term
+term ::= term * factor | term / factor | factor
+factor ::= ( expression ) | identifier | constant | array_element
+read_statement ::= in >> list_identifiers | in ( constant ) >> list_identifiers
+list_identifiers_print ::= identifier | array_element | identifier , list_identifiers_print | array_element , list_identifiers_print
+write_statement ::= out << list_outputs
+list_outputs ::= output | output , list_outputs
+output ::= identifier | constant | expression | array_element
+compound_statement ::= { statement ; { statement ; } }
+struct_statement ::= if_statement | while_statement | for_statement
+if_statement ::= if ( condition ) simple_statement else simple_statement | if ( condition ) compound_statement else simple_statement | if ( condition ) simple_statement else compound_statement | if ( condition ) compound_statement else compound_statement
+while_statement ::= while ( condition ) do simple_statement | while ( condition ) do compound_statement
+for_statement ::= for ( assign_statement ; condition ; assign_statement ; )
+condition ::= expression relation expression
+relation ::= > | < | == | <= | >= | != | and | or
+array_element ::= identifier [ identifier ] | identifier [ constant ]
