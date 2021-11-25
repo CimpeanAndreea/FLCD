@@ -5,10 +5,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Grammar {
-    private Set<String> NonTerminals = new HashSet<>();
-    private Set<String> Terminals = new HashSet<>();
-    private String StartingSymbol;
-    private HashMap<List<String>, Set<List<String>>> Productions = new HashMap<>();
+    public Set<String> NonTerminals = new HashSet<>();
+    public Set<String> Terminals = new HashSet<>();
+    public String StartingSymbol;
+    public HashMap<List<String>, Set<List<String>>> Productions = new HashMap<>();
     private String fileName;
 
     public Grammar(String fileName) {
