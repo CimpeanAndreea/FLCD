@@ -90,43 +90,51 @@ public class Grammar {
         System.out.println("\nPRODUCTIONS");
         StringBuilder stringBuilder = new StringBuilder();
         for(List<String> lhs : this.Productions.keySet()) {
-            String left = String.join("", lhs);
+            String left = String.join(" ", lhs);
             Set<List<String>> rhs = this.Productions.get(lhs);
-            stringBuilder.append(left).append("->");
+            stringBuilder.append(left).append(" -> ");
             for(List<String> oneProduction : rhs) {
                 for(String element : oneProduction) {
-                    stringBuilder.append(element);
+                    stringBuilder.append(element).append(" ");
                 }
-                stringBuilder.append("|");
+                stringBuilder.append(" | ");
             }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             stringBuilder.append("\n");
         }
         System.out.println(stringBuilder);
     }
 
-    public void printProductionsForNonTerminal(String NonTerminal) {
-        System.out.println("\nPRODUCTIONS FOR NON TERMINAL");
+    public void printProductionsForNonTerminal(String nonTerminal) {
+        System.out.println("\nPRODUCTIONS FOR NON TERMINAL:" + nonTerminal);
         StringBuilder stringBuilder = new StringBuilder();
         for(List<String> lhs : this.Productions.keySet()) {
-            if(lhs.contains(NonTerminal) && Objects.equals(lhs.get(0), NonTerminal)) {
+            if(lhs.contains(nonTerminal) && Objects.equals(lhs.get(0), nonTerminal)) {
                 Set<List<String>> rhs = this.Productions.get(lhs);
-                stringBuilder.append(NonTerminal).append("->");
+                stringBuilder.append(nonTerminal).append(" -> ");
                 for(List<String> oneProduction : rhs) {
                     for(String element : oneProduction) {
-                        stringBuilder.append(element);
+                        stringBuilder.append(element).append(" ");
                     }
-                    stringBuilder.append("|");
+                    stringBuilder.append(" | ");
                 }
             }
         }
         if(stringBuilder.isEmpty()) {
-            System.out.println("No production for the given terminal");
+            System.out.println("No production for the given nonterminal");
         }
         else {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             System.out.println(stringBuilder);
         }
+    }
+
+    public Set<List<String>> getProductionsForNonTerminal(String nonTerminal) {
+        List<String> lhs = new ArrayList<>();
+        lhs.add(nonTerminal);
+        return this.Productions.get(lhs);
     }
 
     public boolean checkContextFreeGrammar() {

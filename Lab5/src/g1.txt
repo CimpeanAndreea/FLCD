@@ -1,5 +1,5 @@
 S A
-a b c
+a b
 S
-S A ::= a A
-A ::= b A | c | epsilon
+S A ::= A A
+A ::= a A | b
