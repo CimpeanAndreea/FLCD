@@ -3,23 +3,29 @@ import java.util.*;
 public class Parser {
     private Grammar grammar;
     private List<Production> numberedProductions;
+    private List<String> actionsParsingTable = new ArrayList<>();
+    private HashMap<Pair<Integer, String>, Integer> gotoParsingTable = new HashMap<>();
+    private List<State> states;
 
     public Parser(String grammarFile) {
         this.grammar = new Grammar(grammarFile);
         this.numberedProductions = new ArrayList<>();
-        if (this.grammar.checkContextFreeGrammar()) {
-            Set<List<String>> leftHandSides = this.grammar.Productions.keySet();
-            for (List<String> lhs : leftHandSides) {
-                Set<List<String>> rightHandSides = this.grammar.Productions.get(lhs);
-                for(List<String> rhs : rightHandSides)
-                this.numberedProductions.add(new Production(lhs.get(0), rhs));
-            }
-        }
+
         List<String> r = new ArrayList<>(List.of(this.grammar.StartingSymbol));
         Set<List<String>> rhs = new HashSet<>();
         rhs.add(r);
         this.grammar.Productions.put(new ArrayList<>(List.of("S_")), rhs);
         this.grammar.Terminals.add("S_");
+
+        if (this.grammar.checkContextFreeGrammar()) {
+            Set<List<String>> leftHandSides = this.grammar.Productions.keySet();
+            for (List<String> lhs : leftHandSides) {
+                Set<List<String>> rightHandSides = this.grammar.Productions.get(lhs);
+                for(List<String> rhs_1 : rightHandSides)
+                this.numberedProductions.add(new Production(lhs.get(0), rhs_1));
+            }
+        }
+
     }
 
     /*
@@ -140,4 +146,36 @@ public class Parser {
         while (modified);
         return collection;
     }
+
+    // Construct LR(0) table
+    // -> one line for each state
+    // -> 2 parts
+    //      - action: one column
+    //      - goto: one column for each symbol
+    public void constructParsingTable() {
+        this.states = this.canonicalCollection();
+        for (int i = 0; i < this.states.size(); i++) {
+            this.actionsParsingTable.add(null);
+        }
+
+        for (int i = 0; i < this.states.size(); i++) {
+            for(Item item : this.states.get(i).items) {
+                Item acceptItem = new Item("S_", new ArrayList<>(List.of(this.grammar.StartingSymbol)), 1);
+                if (item == acceptItem) {
+                    this.actionsParsingTable.set(i, "acc");
+                }
+                if (item.dotIndex != item.rightHandSide.size() - 1) {
+                    this.actionsParsingTable.set(i, "shift");
+                }
+                else {
+                    List<String> rhs = new ArrayList<>(item.rightHandSide);
+                    rhs.remove(rhs.size() - 1);
+                    Production production = new Production(item.leftHandSide, rhs);
+                    int indexOfProduction = this.numberedProductions.indexOf(production);
+                    this.actionsParsingTable.set(i, "reduce " + indexOfProduction);
+                }
+            }
+        }
+    }
+
 }
