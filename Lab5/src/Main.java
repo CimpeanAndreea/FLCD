@@ -19,5 +19,6 @@ public class Main {
             System.out.println("State " + i);
             System.out.println(states.get(i));
         }
+        parser.constructParsingTable();
     }
 }

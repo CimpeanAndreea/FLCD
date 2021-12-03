@@ -153,26 +153,59 @@ public class Parser {
     //      - action: one column
     //      - goto: one column for each symbol
     public void constructParsingTable() {
+        List<String> listOfTerminalsAndNonTerminals = new ArrayList<>();
+        listOfTerminalsAndNonTerminals.addAll(grammar.NonTerminals);
+        listOfTerminalsAndNonTerminals.addAll(grammar.Terminals);
+
         this.states = this.canonicalCollection();
         for (int i = 0; i < this.states.size(); i++) {
             this.actionsParsingTable.add(null);
         }
 
+        Item acceptItem = new Item("S_", new ArrayList<>(List.of(this.grammar.StartingSymbol, ".")), 1);
         for (int i = 0; i < this.states.size(); i++) {
             for(Item item : this.states.get(i).items) {
-                Item acceptItem = new Item("S_", new ArrayList<>(List.of(this.grammar.StartingSymbol)), 1);
-                if (item == acceptItem) {
+                if (item.equals(acceptItem)) {
                     this.actionsParsingTable.set(i, "acc");
+                    continue;
                 }
                 if (item.dotIndex != item.rightHandSide.size() - 1) {
+                    if (this.actionsParsingTable.get(i) != null && this.actionsParsingTable.get(i).contains("reduce")) {
+                        System.out.println("Shift - reduce conflict at state: " + this.states.get(i));
+                    }
                     this.actionsParsingTable.set(i, "shift");
                 }
                 else {
+                    if (this.actionsParsingTable.get(i) != null && this.actionsParsingTable.get(i).contains("reduce")) {
+                        System.out.println("Reduce - reduce conflict at state: " + this.states.get(i));
+                    }
+
+                    if (this.actionsParsingTable.get(i) != null && this.actionsParsingTable.get(i).contains("shift")) {
+                        System.out.println("Shift - reduce conflict at state: " + this.states.get(i));
+                    }
+
                     List<String> rhs = new ArrayList<>(item.rightHandSide);
                     rhs.remove(rhs.size() - 1);
                     Production production = new Production(item.leftHandSide, rhs);
                     int indexOfProduction = this.numberedProductions.indexOf(production);
                     this.actionsParsingTable.set(i, "reduce " + indexOfProduction);
+                }
+            }
+        }
+
+        System.out.println(this.actionsParsingTable);
+
+        for (int i = 0; i < this.states.size(); i++) {
+            for (String symbol : listOfTerminalsAndNonTerminals) {
+                this.gotoParsingTable.put(new Pair<>(i, symbol), null);
+            }
+        }
+
+        for(int i = 0; i < this.states.size(); i++) {
+            for (String symbol : listOfTerminalsAndNonTerminals) {
+                State followingState = this.goTo(this.states.get(i), symbol);
+                if (followingState != null) {
+                    this.gotoParsingTable.put(new Pair<>(i, symbol), this.states.indexOf(followingState));
                 }
             }
         }
