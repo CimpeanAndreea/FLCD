@@ -4,15 +4,20 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        Grammar grammar = new Grammar("src/g2.txt");
-        grammar.printTerminals();
+        Grammar grammar = new Grammar("src/g1.txt");
+        /*grammar.printTerminals();
         grammar.printNonTerminals();
         grammar.printStartingSymbol();
         grammar.printProductions();
-        grammar.printProductionsForNonTerminal("program");
+        grammar.printProductionsForNonTerminal("A");
         System.out.println("\nIs CFG: " + grammar.checkContextFreeGrammar());
+         */
+
         Parser parser = new Parser("src/g1.txt");
-        List<Item> items = parser.closure(new Item("S_", new ArrayList<>(Arrays.asList(".", "S")), 0));
-        System.out.println(items);
+        List<State> states = parser.canonicalCollection();
+        for (int i = 0; i < states.size(); i++) {
+            System.out.println("State " + i);
+            System.out.println(states.get(i));
+        }
     }
 }
