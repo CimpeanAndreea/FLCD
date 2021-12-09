@@ -11,11 +11,7 @@ public class Parser {
         this.grammar = new Grammar(grammarFile);
         this.numberedProductions = new ArrayList<>();
 
-        List<String> r = new ArrayList<>(List.of(this.grammar.StartingSymbol));
-        Set<List<String>> rhs = new HashSet<>();
-        rhs.add(r);
-        this.grammar.Productions.put(new ArrayList<>(List.of("S_")), rhs);
-        this.grammar.Terminals.add("S_");
+        this.numberedProductions.add(new Production("S_", new ArrayList<>(List.of(this.grammar.StartingSymbol))));
 
         if (this.grammar.checkContextFreeGrammar()) {
             Set<List<String>> leftHandSides = this.grammar.Productions.keySet();
@@ -26,6 +22,11 @@ public class Parser {
             }
         }
 
+        List<String> r = new ArrayList<>(List.of(this.grammar.StartingSymbol));
+        Set<List<String>> rhs = new HashSet<>();
+        rhs.add(r);
+        this.grammar.Productions.put(new ArrayList<>(List.of("S_")), rhs);
+        this.grammar.Terminals.add("S_");
     }
 
     /*
@@ -153,6 +154,12 @@ public class Parser {
     //      - action: one column
     //      - goto: one column for each symbol
     public void constructParsingTable() {
+        System.out.println("CONSTRUCTING PARSER TABLE");
+        System.out.println("NUMBERED PRODUCTIONS");
+        for (int i = 1; i < numberedProductions.size(); i++) {
+            System.out.println(i + ": " + numberedProductions.get(i));
+        }
+
         List<String> listOfTerminalsAndNonTerminals = new ArrayList<>();
         listOfTerminalsAndNonTerminals.addAll(grammar.NonTerminals);
         listOfTerminalsAndNonTerminals.addAll(grammar.Terminals);
@@ -193,6 +200,7 @@ public class Parser {
             }
         }
 
+        System.out.println("\nACTIONS");
         System.out.println(this.actionsParsingTable);
 
         for (int i = 0; i < this.states.size(); i++) {
@@ -209,6 +217,161 @@ public class Parser {
                 }
             }
         }
+
+        System.out.println("\nGOTO");
+        for (int i = 0; i < this.states.size(); i++) {
+            for (String symbol : listOfTerminalsAndNonTerminals) {
+                Integer gotoResult = this.gotoParsingTable.get(new Pair<>(i, symbol));
+                if (gotoResult != null) {
+                    System.out.println("(state " + i + ",symbol " + symbol + ") = production " + gotoResult);
+                }
+            }
+        }
+    }
+
+    public void parseSequence (List<String> sequence) {
+        System.out.println("PARSING...");
+        List<String> workingStack = new ArrayList<>();
+        workingStack.add("$");
+        workingStack.add("0");
+
+        List<Integer> outputStack = new ArrayList<>();
+
+        int indexInSequence = 0;
+
+        boolean end = false;
+        do {
+            int workingStackTopState = Integer.parseInt(workingStack.get(workingStack.size() - 1));
+            String actionWorkingStackTopState = this.actionsParsingTable.get(workingStackTopState);
+            System.out.println(workingStack);
+            System.out.println(actionWorkingStackTopState);
+            if (Objects.equals(actionWorkingStackTopState, "shift")) {
+                if (indexInSequence >= sequence.size()) {
+                    System.out.println("Error on symbol " + sequence.get(indexInSequence - 1));
+                    end = true;
+                }
+                else {
+                    workingStack.add(sequence.get(indexInSequence));
+                    Integer gotoResult = this.gotoParsingTable.get(new Pair<>(workingStackTopState, sequence.get(indexInSequence)));
+                    if (gotoResult.equals(null)) {
+                        System.out.println("Error on symbol " + sequence.get(indexInSequence));
+                        end = true;
+                    }
+                    else {
+                        workingStack.add(gotoResult.toString());
+                        indexInSequence += 1;
+                    }
+                }
+            }
+            else if (Objects.equals(actionWorkingStackTopState, "acc")){
+                if (indexInSequence != sequence.size()) {
+                    if (indexInSequence < sequence.size()) {
+                        System.out.println("Error on symbol " + sequence.get(indexInSequence));
+                    }
+                    else {
+                        System.out.println("Error on symbol " + sequence.get(sequence.size() - 1));
+                    }
+                }
+                else {
+                    System.out.println("\nACCEPT");
+                    Collections.reverse(outputStack);
+                    System.out.println(outputStack);
+
+                    System.out.println("\nDERIVATIONS");
+                    List<List<String>> derivations = new ArrayList<>();
+                    derivations.add(new ArrayList<>(List.of(this.grammar.StartingSymbol)));
+                    derivations.add(new ArrayList<>(this.numberedProductions.get(outputStack.get(0)).rightHandSide));
+                    for (int i = 1; i < outputStack.size(); i++) {
+                        List<String> previousDerivation = derivations.get(derivations.size() - 1);
+                        Production production = this.numberedProductions.get(outputStack.get(i));
+                        List<String> productionRhs = production.rightHandSide;
+                        List<String> newDerivation = new ArrayList<>();
+                        for (int j = previousDerivation.size() - 1; j >= 0; j--) {
+                            if (Objects.equals(previousDerivation.get(j), production.leftHandSide)) {
+                                for (int k = 0; k < j; k++) {
+                                    newDerivation.add(previousDerivation.get(k));
+                                }
+                                newDerivation.addAll(productionRhs);
+                                for (int k = j + 1; k < previousDerivation.size(); k++) {
+                                    newDerivation.add(previousDerivation.get(k));
+                                }
+                                break;
+                            }
+                        }
+                        derivations.add(newDerivation);
+                    }
+                    StringBuilder stringBuilder = new StringBuilder();
+                    for(List<String> derivation : derivations) {
+                        for (String symbol : derivation) {
+                            stringBuilder.append(symbol).append(" ");
+                        }
+                        stringBuilder.append("=> ");
+                    }
+                    stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                    stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                    stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                    System.out.println(stringBuilder);
+
+                    List<SyntaxTreeNode> syntaxTree = new ArrayList<>();
+                    syntaxTree.add(new SyntaxTreeNode(1, this.grammar.StartingSymbol, 0, 0));
+
+                    System.out.println("\nSYNTAX TREE");
+
+                    for (int i = 0; i < outputStack.size(); i++) {
+                        Production production = this.numberedProductions.get(outputStack.get(i));
+                        for (int index = syntaxTree.size(); index >= 1; index--) {
+                            boolean hasChildren = false;
+                            for (int j = index - 1; j < syntaxTree.size(); j++) {
+                                if (syntaxTree.get(j).parentIndex == index) {
+                                    hasChildren = true;
+                                    break;
+                                }
+                            }
+                            if (!hasChildren && syntaxTree.get(index - 1).info.equals(production.leftHandSide)) {
+                                syntaxTree.add(new SyntaxTreeNode(syntaxTree.size() + 1, production.rightHandSide.get(0), index, 0));
+                                for (int j = 1; j < production.rightHandSide.size(); j++) {
+                                    syntaxTree.add(new SyntaxTreeNode(syntaxTree.size() + 1, production.rightHandSide.get(j), index, syntaxTree.size()));
+                                }
+                                break;
+                            }
+                        }
+
+                    }
+                    for (SyntaxTreeNode node : syntaxTree) {
+                        System.out.println(node);
+                    }
+
+                }
+                end = true;
+            }
+            else if (actionWorkingStackTopState.startsWith("reduce")) {
+                int reduceProductionIndex = Integer.parseInt(actionWorkingStackTopState.split(" ")[1]);
+                Production reduceProduction = this.numberedProductions.get(reduceProductionIndex);
+                for (int i = 0; i < reduceProduction.rightHandSide.size() * 2; i++) {
+                    workingStack.remove(workingStack.size() - 1);
+                }
+                int currentWorkingStackTop = Integer.parseInt(workingStack.get(workingStack.size() - 1));
+                workingStack.add(reduceProduction.leftHandSide);
+
+
+                Integer gotoResult = this.gotoParsingTable.get(new Pair<>(currentWorkingStackTop, reduceProduction.leftHandSide));
+                if (gotoResult.equals(null)) {
+                    System.out.println("Error on symbol " + sequence.get(indexInSequence));
+                    end = true;
+                }
+                else
+                {
+                    workingStack.add(gotoResult.toString());
+                    outputStack.add(reduceProductionIndex);
+                }
+            }
+            else {
+                System.out.println("Error on symbol" + sequence.get(indexInSequence));
+                end = true;
+            }
+        }
+        while (!end);
+
     }
 
 }

@@ -20,5 +20,7 @@ public class Main {
             System.out.println(states.get(i));
         }
         parser.constructParsingTable();
+
+        parser.parseSequence(new ArrayList<>(List.of("(","x",",","(","x",")",")")));
     }
 }

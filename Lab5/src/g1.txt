@@ -1,5 +1,7 @@
-S A
-a b
+S L
+x ( ) ,
 S
-S ::= A A
-A ::= a A | b
+S ::= ( L )
+S ::= x
+L ::= S
+L ::= L , S
