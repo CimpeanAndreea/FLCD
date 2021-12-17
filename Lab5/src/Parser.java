@@ -1,4 +1,6 @@
+import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Parser {
     private Grammar grammar;
@@ -229,6 +231,29 @@ public class Parser {
         }
     }
 
+    public List<String> readSequence() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("src/seq.txt"))) {
+            List<String> sequence = Arrays.stream(reader.lines().collect(Collectors.toList()).get(0).split(" ")).collect(Collectors.toList());
+            return sequence;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void writeSyntaxTree(List<SyntaxTreeNode> syntaxTree) {
+        try {
+            PrintWriter pw = new PrintWriter(new FileOutputStream("src/out1.txt"));
+            for (SyntaxTreeNode node : syntaxTree) {
+                pw.println(node);
+            }
+            pw.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void parseSequence (List<String> sequence) {
         System.out.println("PARSING...");
         List<String> workingStack = new ArrayList<>();
@@ -253,7 +278,7 @@ public class Parser {
                 else {
                     workingStack.add(sequence.get(indexInSequence));
                     Integer gotoResult = this.gotoParsingTable.get(new Pair<>(workingStackTopState, sequence.get(indexInSequence)));
-                    if (gotoResult.equals(null)) {
+                    if (gotoResult == null) {
                         System.out.println("Error on symbol " + sequence.get(indexInSequence));
                         end = true;
                     }
@@ -340,6 +365,7 @@ public class Parser {
                     for (SyntaxTreeNode node : syntaxTree) {
                         System.out.println(node);
                     }
+                    this.writeSyntaxTree(syntaxTree);
 
                 }
                 end = true;
@@ -355,7 +381,7 @@ public class Parser {
 
 
                 Integer gotoResult = this.gotoParsingTable.get(new Pair<>(currentWorkingStackTop, reduceProduction.leftHandSide));
-                if (gotoResult.equals(null)) {
+                if (gotoResult == null) {
                     System.out.println("Error on symbol " + sequence.get(indexInSequence));
                     end = true;
                 }

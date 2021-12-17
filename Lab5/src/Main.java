@@ -21,6 +21,7 @@ public class Main {
         }
         parser.constructParsingTable();
 
-        parser.parseSequence(new ArrayList<>(List.of("(","x",",","(","x",")",")")));
+        //parser.parseSequence(new ArrayList<>(List.of("(","x",",","(","x",")",")")));
+        parser.parseSequence(parser.readSequence());
     }
 }
