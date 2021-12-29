@@ -1,0 +1,51 @@
+
+%{
+#include <stdio.h>
+int line = 0;
+%}
+
+%option noyywrap
+%option caseless
+
+IDENTIFIER              ([a-zA-Z][a-zA-Z0-9]{0,255})|([a-zA-Z][a-zA-Z0-9_]{0,254}[a-zA-Z0-9])
+INTEGER_CONSTANT        ([+-]?[1-9][0-9]*)|0
+CHARACTER_CONSTANT      \'[a-zA-Z0-9]\'
+STRING_CONSTANT         \"[-a-zA-Z0-9_:;!?.+/%*&#<>= ^]*\"
+BOOLEAN_CONSTANT        true|false
+
+OPERATOR                [-+*/%<>]|">>"|"<<"|"<-"|"->"|"<="|">="|"=="|"!="
+
+SEPARATOR               \[|\]|\{|\}|\(|\)|;|:|,
+
+RESERVED                program|main|const|declarations|statements|integer|character|boolean|string|array|in|out|while|for|if|else|and|or
+
+%%
+
+{OPERATOR}              printf("Operator: %s\n", yytext);
+{SEPARATOR}             printf("Separator: %s\n", yytext);
+{INTEGER_CONSTANT}      printf("Integer: %s\n", yytext);
+{CHARACTER_CONSTANT}    printf("Character: %s\n", yytext);
+{STRING_CONSTANT}       printf("String: %s\n", yytext);
+{BOOLEAN_CONSTANT}      printf("Boolean: %s\n", yytext);
+{RESERVED}              printf("Reserved: %s\n", yytext);
+{IDENTIFIER}            printf("Identifier: %s\n", yytext);
+
+[ \t]                   /* eat up whitespace */
+[\n]                    { line++; }
+.                       { printf("Error: %s on line: %d\n", yytext, line); }
+
+[0-9_]+{IDENTIFIER}|{IDENTIFIER}_+      printf("Error: %s on line: %d\n", yytext, line);
+"+0"|"-0"|[-+]?"0"[0-9]+                printf("Error: %s on line: %d\n", yytext, line);
+%%
+
+void main( argc, argv )
+int argc;
+char **argv;
+{
+    ++argv, --argc; /* skip over program name */
+    if ( argc > 0 )
+    yyin = fopen( argv[0], "r" );
+    else
+    yyin = stdin;
+    yylex();
+}

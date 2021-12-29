@@ -2,13 +2,5 @@ SyntaxTreeNode{index=1, info='S', parentIndex=0, rightSibling=0}
 SyntaxTreeNode{index=2, info='(', parentIndex=1, rightSibling=0}
 SyntaxTreeNode{index=3, info='L', parentIndex=1, rightSibling=2}
 SyntaxTreeNode{index=4, info=')', parentIndex=1, rightSibling=3}
-SyntaxTreeNode{index=5, info='L', parentIndex=3, rightSibling=0}
-SyntaxTreeNode{index=6, info=',', parentIndex=3, rightSibling=5}
-SyntaxTreeNode{index=7, info='S', parentIndex=3, rightSibling=6}
-SyntaxTreeNode{index=8, info='(', parentIndex=7, rightSibling=0}
-SyntaxTreeNode{index=9, info='L', parentIndex=7, rightSibling=8}
-SyntaxTreeNode{index=10, info=')', parentIndex=7, rightSibling=9}
-SyntaxTreeNode{index=11, info='S', parentIndex=9, rightSibling=0}
-SyntaxTreeNode{index=12, info='x', parentIndex=11, rightSibling=0}
-SyntaxTreeNode{index=13, info='S', parentIndex=5, rightSibling=0}
-SyntaxTreeNode{index=14, info='x', parentIndex=13, rightSibling=0}
+SyntaxTreeNode{index=5, info='S', parentIndex=3, rightSibling=0}
+SyntaxTreeNode{index=6, info='x', parentIndex=5, rightSibling=0}
