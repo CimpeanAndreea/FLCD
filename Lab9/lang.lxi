@@ -1,0 +1,75 @@
+%{
+#include <stdio.h>
+#include "y.tab.h"
+
+int line = 0;
+
+%}
+
+%option noyywrap
+%option caseless
+
+IDENTIFIER              ([a-zA-Z][a-zA-Z0-9]{0,255})|([a-zA-Z][a-zA-Z0-9_]{0,254}[a-zA-Z0-9])
+INTEGER_CONSTANT        ([+-]?[1-9][0-9]*)|0
+CHARACTER_CONSTANT      \'[a-zA-Z0-9]\'
+STRING_CONSTANT         \"[-a-zA-Z0-9_:;!?.+/%*&#<>= ^]*\"
+BOOLEAN_CONSTANT        true|false
+
+OPERATOR                [-+*/%]
+COMPARISON_OPERATOR     "<="|">="|"=="|"!="|">"|"<"
+
+%%
+
+main                    { printf("Reserved: %s\n", yytext); return MAIN; }
+declarations            { printf("Reserved: %s\n", yytext); return DECLARATIONS; }
+statements              { printf("Reserved: %s\n", yytext); return STATEMENTS; }
+integer                 { printf("Reserved: %s\n", yytext); return INTEGER; }
+string                  { printf("Reserved: %s\n", yytext); return STRING; }
+boolean                 { printf("Reserved: %s\n", yytext); return BOOLEAN; }
+character               { printf("Reserved: %s\n", yytext); return CHARACTER; }
+array                   { printf("Reserved: %s\n", yytext); return ARRAY; }
+const                   { printf("Reserved: %s\n", yytext); return CONST; }
+and                     { printf("Reserved: %s\n", yytext); return AND; }
+or                      { printf("Reserved: %s\n", yytext); return OR; }
+in                      { printf("Reserved: %s\n", yytext); return IN; }
+out                     { printf("Reserved: %s\n", yytext); return OUT; }
+if                      { printf("Reserved: %s\n", yytext); return IF; }
+else                    { printf("Reserved: %s\n", yytext); return ELSE; }
+for                     { printf("Reserved: %s\n", yytext); return FOR; }
+while                   { printf("Reserved: %s\n", yytext); return WHILE; }
+do                      { printf("Reserved: %s\n", yytext); return DO; }
+program                 { printf("Reserved: %s\n", yytext); return PROGRAM; }
+
+"{"                     { printf("Separator: %s\n", yytext); return OPEN_CURLY_BRACKET; }
+"}"                     { printf("Separator: %s\n", yytext); return CLOSED_CURLY_BRACKET; }
+"("                     { printf("Separator: %s\n", yytext); return OPEN_ROUND_BRACKET; }
+")"                     { printf("Separator: %s\n", yytext); return CLOSED_ROUND_BRACKET; }
+"["                     { printf("Separator: %s\n", yytext); return OPEN_SQUARE_BRACKET; }
+"]"                     { printf("Separator: %s\n", yytext); return CLOSED_SQUARE_BRACKET; }
+";"                     { printf("Separator: %s\n", yytext); return SEMICOLON; }
+":"                     { printf("Separator: %s\n", yytext); return COLON; }
+","                     { printf("Separator: %s\n", yytext); return COMMA; }
+
+
+{INTEGER_CONSTANT}      { printf("Integer: %s\n", yytext); return INTEGER_CONST; }
+{CHARACTER_CONSTANT}    { printf("Character: %s\n", yytext); return CHARACTER_CONST; }
+{STRING_CONSTANT}       { printf("String: %s\n", yytext); return STRING_CONST; }
+{BOOLEAN_CONSTANT}      { printf("Boolean: %s\n", yytext); return BOOLEAN_CONST; }
+
+{IDENTIFIER}            { printf("Identifier: %s\n", yytext); return IDENTIFIER; }
+
+{OPERATOR}              { printf("Operator: %s\n", yytext); return OPERATOR; }
+">>"                    { printf("Operator: %s\n", yytext); return IN_OPERATOR; }
+"<<"                    { printf("Operator: %s\n", yytext); return OUT_OPERATOR; }
+{COMPARISON_OPERATOR}   { printf("Operator: %s\n", yytext); return COMPARISON_OPERATOR; }
+"<-"                    { printf("Operator: %s\n", yytext); return ASSIGN_OPERATOR; }
+"->"                    { printf("Operator: %s\n", yytext); return FOLLOW_OPERATOR; }
+
+
+[ \t]                   /* eat up whitespace */
+[\n]                    { line++; }
+.                       { yyerror(yytext, line); }
+
+[0-9_]+{IDENTIFIER}|{IDENTIFIER}_+      { yyerror(yytext, line); }
+"+0"|"-0"|[-+]?"0"[0-9]+                { yyerror(yytext, line); }
+%%
